@@ -1,0 +1,15 @@
+name: Mordritch's Blog
+description: Thoughts had, mostly while developing my JavaScript Minecraft Simulator
+meta_description: "Mordritch's Blog, Jonathan Lydall, JavaScript Minecraft Redstone Simulator"
+
+markdown: redcarpet
+highlighter: pygments
+logo: false
+paginate: 15
+baseurl: /
+domain_name: 'http://blog.mordritch.com'
+google_analytics: 'UA-23638105-2'
+
+# Details for the RSS feed generator
+url:            'http://blog.mordritch.com'
+author:         'Jonathan Lydall'
