@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Building a Better Java Parser"
-date:   2015-01-15
+date:   2015-01-15 19:33:00.000000000 +2:00
 ---
 During my [last post]({% post_url 2015-01-06-porting-java-inner-and-anonymous-classes-to-typescript %}), I claimed all that was needed was to add the ability to my Transpiler to emit nested and anonymous classes, and by now I expected to be done with that. It turned out that what I though was a "good enough" Transpiler, was in fact, not.
 
