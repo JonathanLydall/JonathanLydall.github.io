@@ -3,7 +3,7 @@ layout: post
 title:  "Building a Better Java Parser"
 date:   2015-01-15 12:33:00.000000000 +2:00
 ---
-During my [last post]({% post_url 2015-01-06-porting-java-inner-and-anonymous-classes-to-typescript %}), I claimed all that was needed was to add the ability to my Transpiler to emit nested and anonymous classes, and by now I expected to be done with that. It turned out that what I though was a "good enough" Transpiler, was in fact, not.
+During my [last post]({% post_url porting-java-inner-and-anonymous-classes-to-typescript %}), I claimed all that was needed was to add the ability to my Transpiler to emit nested and anonymous classes, and by now I expected to be done with that. It turned out that what I though was a "good enough" Transpiler, was in fact, not.
 
 In particular, its major failing was that its parsing was far too fragile. Even aside from trying to parse nested and anonymous classes, which should have been *relatively* easy to add, depending on the way the source Java was written, often enough it would incorrectly recognise a control structure, method call, etc and the parsing would fail.
 
