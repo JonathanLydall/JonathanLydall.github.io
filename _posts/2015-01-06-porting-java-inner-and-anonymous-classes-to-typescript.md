@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Porting Java Inner and Anonymous Classes To TypeScript"
-date:   2014-01-06 13:18:00
+date:   2015-01-06 13:18:00 +2:00
 ---
 Sometime between version 1.5 and 1.7.10 of the Minecraft, the source code has undergone significant refactoring and made use of previously unused Java features, which didn't exist in the previous version, namely [Nested](http://docs.oracle.com/javase/tutorial/java/javaOO/nested.html) and [Anonymous](http://docs.oracle.com/javase/tutorial/java/javaOO/anonymousclasses.html) classes, making my transpiler no longer "good enough" and thus needing.
 
