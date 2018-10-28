@@ -3,13 +3,13 @@ layout: post
 title:  "Building a Better Java Parser"
 date:   2015-01-15 12:33:00.000000000 +2:00
 ---
-During my [last post]({% post_url 2015-01-06-porting-java-inner-and-anonymous-classes-to-typescript %}), I claimed all that was needed was to add the ability to my Transpiler to emit nested and anonymous classes, and by now I expected to be done with that. It turned out that what I though was a "good enough" Transpiler, was in fact, not.
+During my [last post]({% post_url 2015-01-06-porting-java-inner-and-anonymous-classes-to-typescript %}), I claimed that all that was needed for me to continue, was to add the ability to my Transpiler to emit nested and anonymous classes, and by now I expected to be done with that. It turned out that what I thought was a "good enough" Transpiler, was in fact, not.
 
 In particular, its major failing was that its parsing was far too fragile. Even aside from trying to parse nested and anonymous classes, which should have been *relatively* easy to add, depending on the way the source Java was written, often enough it would incorrectly recognise a control structure, method call, etc and the parsing would fail.
 
-Truthfully, my parser was pretty rubbish, but it was my first attempt at a parser and, unsurprisingly, I learnt many lessons along the way as I came to better understand the domain of parsing. While it's time consuming and disappointing that I had to resort to re-writing my parser, software developers learning such lessons in their inexperienced domain is actually pretty normal, hence why well experienced developers can normally demand a higher salary.
+Truthfully, my parser was pretty rubbish, but it was my first attempt at a parser and, unsurprisingly, I learnt many lessons along the way as I came to better understand the domain of parsing. While it's time consuming and disappointing that I had to resort to re-writing my parser, software developers learning such lessons in their inexperienced domain is actually pretty normal, hence why well experienced developers are able to demand a higher salary.
 
-I have no formal training on how to write a parser and hence "winged it" at first, but having written one which mostly worked before, I know what worked well, and what I should change. My parser was broken into three parts:
+I have no formal training on how to write a parser and hence "winged it" at first, but having written one which mostly worked before, I know what worked well, and what I should change. My parser can be broken down into three parts:
 
 1. [The Lexer](http://en.wikipedia.org/wiki/Lexical_analysis), which does tokenization of the input file(s)
 2. The Parser, which uses the tokens to identify Java structures and then creates an [AST (Abstract Syntax Tree)](http://en.wikipedia.org/wiki/Abstract_syntax_tree).
@@ -56,7 +56,7 @@ And turning it into a list of tokens which would look like:
 	[}]
 	[}]
 
-This process is pretty straightforward, it just takes a little time to get it right, and there are the occasional time consuming little gotcha's, like properly reading string literalls.
+This process is pretty straightforward, it just takes a little time to get it right, and there are the occasional time consuming little gotcha's, like properly reading string literals.
 
 For my new transpiler, I am leaving the lexing almost completely untouched, but I have decided to "group" my tokens by types of brackets to make parsing easier, so my grouped tokens look like:
 
@@ -93,7 +93,7 @@ This grouping is a very important change as it makes the next step of parsing, *
 
 Parsing
 ---
-Next, parsing takes our tokens and turns them into an AST. The AST is just the simplist way of representing the code structures in a well organised [object graph](http://en.wikipedia.org/wiki/Object_graph). While in my transpiler, the object graph is composed of instances of C# classes, for demonstration purposes, a JSON object graph of an AST of the above could look like:
+Next, parsing takes our tokens and turns them into an AST. The AST is just the simplest way of representing the code structures in a well organised [object graph](http://en.wikipedia.org/wiki/Object_graph). While in my transpiler, the object graph is composed of instances of C# classes, for demonstration purposes, a JSON object graph of an AST of the above could look like:
 
 {% highlight js %}
 JavaFile: {
@@ -138,14 +138,14 @@ Parsing was where I had a lot of problems in my old transpiler, it was very frag
 {% highlight c# %}
 var bufferLength = 0;
 do {
-	if (IsMatchForMethodDeclaration(currentToken) {
+	if (IsMatchForMethodDeclaration(currentToken)) {
 		
 		RewindTokenStream(bufferLength);
 		ParseMethodDeclaration();
 		continue;
 	}
 	
-	if (IsMatchForFieldDeclaration) {
+	if (IsMatchForFieldDeclaration(currentToken)) {
 		...
 	}
 	
@@ -163,29 +163,29 @@ do {
 } while (true);
 {% endhighlight %}
 
-To make matters worse, there only in a single "ParseBody" method, which was used everywhere, so this same "ParseBody" method was used to try identify class members and also expressions, like method invocations, with no concept of it's current context. This means that often enough it was difficult to distuinguish between method declarations and method invocations.
+To make matters worse, there was only a single `ParseBody` method which was used to try identify everything, including both class members and expressions (like method invocations), with no concept of its current context. This means that often enough it was difficult to distinguish between method declarations and method invocations.
 
-To make matters *even worse*, because a method declaration like `public void MethodName(bool par1, int par2, string par3) {...` was representented in the token stream like `[public], [void], [MethodName], [(], [bool], [par1], [,], [int], [par2], [,], [string], [par3], [)], [{]...`, recognizing it correctly using my "buffer" above was non-trivial because of the variable number of parameters.
+To make matters *even worse*, because a method declaration like `public void MethodName(bool par1, int par2, string par3) {...` was represented in the token stream like `[public], [void], [MethodName], [(], [bool], [par1], [,], [int], [par2], [,], [string], [par3], [)], [{]...`, recognizing it correctly using my "buffer" technique above was non-trivial because of the variable number of parameters.
 
-What I found happening in practice is that it would incorrectly recoginize something, like a method invocation as a declaration, then start incorrectly going on a mission parsing incorrectly and failing for a reason of something like running out of elements when trying to find a closing brace, and only at that point would it throw the exception, when there was no easy way to see which element, half way earlier in the stream, was the actually mis-classified token.
+What I found happening in practice is that it would incorrectly recognize something, like a method invocation as a declaration, then start incorrectly going on a mission parsing incorrectly and failing for a reason of something like running out of elements when trying to find a closing brace, and only at that point would it throw the exception, when there was no easy way to see which element, half way earlier in the stream, was the incorrectly classified token.
 
-Anwyay, like I mentioned at the start, in hindsight my original parser was pretty bad, it really was my [throw-away system](http://en.wikipedia.org/wiki/The_Mythical_Man-Month#The_pilot_system), the one I really should have expected would need to be made before the working system.
+Anyway, like I mentioned at the start, in hindsight my original parser was pretty bad, it really was my [throw-away system](http://en.wikipedia.org/wiki/The_Mythical_Man-Month#The_pilot_system), the one I really should have expected would need to be made before the working system.
 
 The TypeScript Emitter
 ---
-This part is quite straightforward, once one has an AST, it's just a matter of deciding the syntax of your output and writing it. The only challenge was dealing with the devising TypeScript/JavaScript ways of representing some of the more complicated Java concepts. I have decided to improve my AST a little, so it will require largely re-writing the emitter, but I am not too worried about the amount of work involved in this part, as most of the work was deciding on the patterns of the output.
+This part is quite straightforward, once one has an AST, it's just a matter of working out the syntax of the output and writing it. The only challenge was dealing with and devising TypeScript/JavaScript ways of representing some of the more complicated Java concepts. I have decided to improve my AST a little, so it will require largely re-writing the emitter, but I am not too worried about the amount of work involved in this part, as most of the challenge was working out the patterns to represent Java in JavaScript, which I have already done in my existing emitter.
 
 The Improved Parser
 ---
 
-This meant that the part I really needed to improve was the parser. I already mentioned above that my first improvement was in the lexer where I grouped the tokens into braced content, which was one the essential components to help make the parsing easier.
+This meant that the part I really needed to improve was the parser. I already mentioned above that my first improvement was in the lexer where I grouped the tokens into braced content, which was one of the essential components to help make the parsing easier.
 
-Towards this end I have also created a simple "Token Input Stream" class, which is a little like an iterator, with methods like `.Next()`, `.HasNext()`, and `.Current()`. It's got a backing list of "Inputs", each input in the list is either a single input token or a group of input tokens, both types of which are stored in a private field in a list. It also has another private field which contains the current position of the list. Finally, I have methods which return a new instance TokenInputStream based on the current TokenInputStream:
+Towards this end I have also created a simple `TokenInputStream` class, which is a little like an iterator, with methods like `.Next()`, `.HasNext()`, and `.Current()`. It's got a backing list of "Inputs", with each input in the list being a single input token or a group of input tokens, both types of which are stored in a private field in a list. It also has another private field which contains the current position of the list. Finally, I have methods which return a new instance `TokenInputStream` based on the current `TokenInputStream`:
 
-- `GetTokenInputStreamForCurrentElement()` which will return an instance of TokenInputStream for the Input Tokens grouped by brace.
-- `GetPeekStream()` which makes a new instance of TokenInputStream, but with the same backing list of Tokens and starting at the current position of the current stream. I use it to help identify which parser we should use, starting at the current input, based on a combination of upcoming elements. If there is a match, I throw away the PeekStream, and the parent stream is then used by the appropriate parser, not requiring it's position to be moved back or reset. Additionally, if there is no match, one can instantly see which element failed to be recognized.
+- `GetTokenInputStreamForCurrentElement()` which will return an instance of `TokenInputStream` for the Input Tokens grouped by brace.
+- `GetPeekStream()` which makes a new instance of `TokenInputStream`, but with the same backing list of Tokens and starting at the current position of the current stream. I use it to help identify which specific parser class we should use, starting at the current input, based on a combination of upcoming elements. If there is a match, I throw away the PeekStream, and the parent stream is then used by the appropriate specific parser class, not requiring its position to be moved back or reset. This also allows us to instantly see which specific token in the stream failed to be recognized when there is no match.
 
-Here is an example from trying to identify the members of a class:
+Here is an example of how I now try to identify the members of a class:
 {% highlight c# %}
 var bodyTokenInputStream = TokenInputStream.GetTokenInputStreamForCurrentElement();
 
@@ -241,7 +241,7 @@ while (bodyTokenInputStream.HasNext())
 
 The code is now very clean, and if it can't work out what the current element should be part of, it instantly fails on the correct element.
 
-And here is an example of an `IsMatch()` method, used to detect if the current token is the start of a Method Declaration member of a class:
+And here is an example of an `IsMatch()` method, in this case used to detect if the current token is the start of a Method Declaration member of a class:
 
 {% highlight c# %}
 public static bool IsMatch(TokenInputStream tokenInputStream)
@@ -291,11 +291,11 @@ public static bool IsMatch(TokenInputStream tokenInputStream)
 }
 {% endhighlight %}
 
-I have opted for a *very* specific match and immediate return false if something doesn't match.
+I have opted for a *very* specific match and immediate return of `false` if something doesn't match.
 
 Using it in practice
 ---
 
-So far I have only written the class parser, and it's working out *infinitely* easier compared to before. My new approach also allows me to validate outer structures, like classes parse, while skipping over innter structures (like expressions), allowing for much easier validation that my approach is working out.
+So far I have only written the class parser, and it's working out *infinitely* easier compared to before. My new approach also allows me to validate outer structures, like class parsing, while skipping over inner structures (like expressions), allowing for much easier validation that my approach is working out.
 
 With that, I'm signing off for this post. When I post the next one, I should be done with the parser.
